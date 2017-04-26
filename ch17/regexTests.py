@@ -23,9 +23,9 @@ from functools import partial
 
 import genetic
 
-repeatMetas = {'?', '*', '+', '{2}', '{2,}'}
-startMetas = {'|', '(', '['}
-endMetas = {')', ']'}
+repeatMetas = set(['?', '*', '+'])
+startMetas = set(['|'])
+endMetas = set([')', ']'])
 allMetas = repeatMetas | startMetas | endMetas
 
 regexErrorsSeen = {}
@@ -244,31 +244,28 @@ def mutate(genes, fnGetFitness, mutationOperators, mutationRoundCounts):
 
 class RegexTests(unittest.TestCase):
     def test_two_digits(self):
-        wanted = {"01", "11", "10"}
-        unwanted = {"00", ""}
+        wanted = set(["01", "11", "10"])
+        unwanted = set(["00", ""])
         self.find_regex(wanted, unwanted, 7)
 
     def test_grouping(self):
-        wanted = {"01", "0101", "010101"}
-        unwanted = {"0011", ""}
+        wanted = set(["01", "0101", "010101"])
+        unwanted = set(["0011", ""])
         self.find_regex(wanted, unwanted, 5)
 
     def test_state_codes(self):
         Fitness.UseRegexLength = True
-        wanted = {"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND"}
-        unwanted = {"N" + l for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    if "N" + l not in wanted}
-        customOperators = [
-            partial(mutate_to_character_set_left, wanted=wanted),
-        ]
+        wanted = set(["NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND"])
+        unwanted = set(["N" + l for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if "N" + l not in wanted])
+        customOperators = [ partial(mutate_to_character_set_left, wanted=wanted),]
         self.find_regex(wanted, unwanted, 11, customOperators)
 
     def test_even_length(self):
-        wanted = {"00", "01", "10", "11", "0000", "0001", "0010", "0011",
+        wanted = set(["00", "01", "10", "11", "0000", "0001", "0010", "0011",
                   "0100", "0101", "0110", "0111", "1000", "1001", "1010",
-                  "1011", "1100", "1101", "1110", "1111"}
-        unwanted = {"0", "1", "000", "001", "010", "011", "100", "101",
-                    "110", "111", ""}
+                  "1011", "1100", "1101", "1110", "1111"])
+        unwanted = set(["0", "1", "000", "001", "010", "011", "100", "101",
+                    "110", "111", ""])
         customOperators = [
             mutate_to_character_set,
         ]
@@ -276,7 +273,7 @@ class RegexTests(unittest.TestCase):
 
     def test_50_state_codes(self):
         Fitness.UseRegexLength = True
-        wanted = {"AL", "AK", "AZ", "AR", "CA",
+        wanted = set(["AL", "AK", "AZ", "AR", "CA",
                   "CO", "CT", "DE", "FL", "GA",
                   "HI", "ID", "IL", "IN", "IA",
                   "KS", "KY", "LA", "ME", "MD",
@@ -285,10 +282,10 @@ class RegexTests(unittest.TestCase):
                   "NM", "NY", "NC", "ND", "OH",
                   "OK", "OR", "PA", "RI", "SC",
                   "SD", "TN", "TX", "UT", "VT",
-                  "VA", "WA", "WV", "WI", "WY"}
-        unwanted = {a + b for a in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                  "VA", "WA", "WV", "WI", "WY"])
+        unwanted = set([a + b for a in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     for b in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    if a + b not in wanted} | \
+                    if a + b not in wanted]) | \
                    set(i for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         customOperators = [
             partial(mutate_to_character_set_left, wanted=wanted),
@@ -330,7 +327,7 @@ class RegexTests(unittest.TestCase):
 
         best = genetic.get_best(fnGetFitness,
                                 max(len(i) for i in textGenes),
-                                optimalFitness, fullGeneset, fnDisplay, 
+                                optimalFitness, fullGeneset, fnDisplay,
                                 fnMutate, poolSize=10)
         self.assertTrue(not optimalFitness > best.Fitness)
 
